@@ -31,25 +31,25 @@ Function Invoke-Luminol {
             name              = ""
             distinguishedname = "" 
             domainsid         = ""
-            highvalue               = $false
+            #highvalue               = $false
             samaccountname    = ""
-            haslaps                 = $false #Populated from LDAP
-            description             = "" #Populated from LDAP
-            whencreated             = 0  #Populated from LDAP
-            enabled                 = "" #Populated from LDAP
-            unconstraineddelegation = "" #Populated from LDAP
-            trustedtoauth           = "" #Populated from LDAP
-            lastlogon               = "" #Populated from LDAP
-            lastlogontimestamp      = "" #Populated from LDAP        
-            pwdlastset              = "" #Populated from LDAP
-            serviceprincipalnames   = New-Object System.Collections.ArrayList #Populated from LDAP
-            operatingsystem         = ""  
-            sidhistory              = New-Object System.Collections.ArrayList #Populated from LDAP
+            #haslaps                 = $false #Populated from LDAP
+            #description             = "" #Populated from LDAP
+            #whencreated             = 0  #Populated from LDAP
+            #enabled                 = "" #Populated from LDAP
+            #unconstraineddelegation = "" #Populated from LDAP
+            #trustedtoauth           = "" #Populated from LDAP
+            #lastlogon               = "" #Populated from LDAP
+            #lastlogontimestamp      = "" #Populated from LDAP        
+            #pwdlastset              = "" #Populated from LDAP
+            #serviceprincipalnames   = New-Object System.Collections.ArrayList #Populated from LDAP
+            #operatingsystem         = ""  
+            #sidhistory              = New-Object System.Collections.ArrayList #Populated from LDAP
         }
         PrimaryGroupSID    = "" #Populated from LDAP
         AllowedToDelegate  = New-Object System.Collections.ArrayList #Populated from LDAP
-        AllowedToAct       = New-Object System.Collections.ArrayList #Populated from LDAP
-        HasSIDHistory      = New-Object System.Collections.ArrayList #Populated from LDAP
+        #AllowedToAct       = New-Object System.Collections.ArrayList #Populated from LDAP
+        #HasSIDHistory      = New-Object System.Collections.ArrayList #Populated from LDAP
  
         Sessions           = @{
             Results       = New-Object System.Collections.ArrayList
@@ -86,11 +86,11 @@ Function Invoke-Luminol {
             Collected     = $false
             FailureReason = $null
         }
-        Status             = $null
+        #Status             = $null
         Aces               = New-Object System.Collections.ArrayList #Populated from LDAP
         ObjectIdentifier   = ""
-        IsDeleted          = $false
-        IsACLProtected     = $false  
+        #IsDeleted          = $false
+        #IsACLProtected     = $false  
     }
 
     #Populate name and domain
@@ -102,7 +102,7 @@ Function Invoke-Luminol {
     $newobject.Properties.name = "$computername.$domain"
 
     #Populate OperatingSystem
-    $newobject.Properties.operatingsystem = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    #$newobject.Properties.operatingsystem = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
 
     #Populate Domain SID
     
@@ -130,7 +130,7 @@ Function Invoke-Luminol {
     $newobject.ObjectIdentifier = $ntAccount.Translate([System.Security.Principal.SecurityIdentifier]).Value
 
     #Populate LocalAdmins
-    (Get-LocalGroupMember -Group "Administrators").foreach{
+    (Get-LocalGroupMember -Group "Administrators" | Where-Object -Property PrincipalSource -EQ "ActiveDirectory").foreach{
         $adminobject = @{
             ObjectIdentifier = $_.SID
             ObjectType       = $_.ObjectClass
@@ -140,7 +140,7 @@ Function Invoke-Luminol {
     }
 
     #Populate RemoteDesktopUsers
-    (Get-LocalGroupMember -Group "Remote Desktop Users").foreach{
+    (Get-LocalGroupMember -Group "Remote Desktop Users" | Where-Object -Property PrincipalSource -EQ "ActiveDirectory").foreach{
         $rdpobject = @{
             ObjectIdentifier = $_.SID
             ObjectType       = $_.ObjectClass
@@ -150,7 +150,7 @@ Function Invoke-Luminol {
     }
 
     #Populate DcomUsers
-    (Get-LocalGroupMember -Group "Distributed COM Users").foreach{
+    (Get-LocalGroupMember -Group "Distributed COM Users" | Where-Object -Property PrincipalSource -EQ "ActiveDirectory").foreach{
         $dcomobject = @{
             ObjectIdentifier = $_.SID
             ObjectType       = $_.ObjectClass
@@ -160,7 +160,7 @@ Function Invoke-Luminol {
     }
 
     #Populate PSRemoteUsers
-    (Get-LocalGroupMember -Group "Remote Management Users").foreach{
+    (Get-LocalGroupMember -Group "Remote Management Users" | Where-Object -Property PrincipalSource -EQ "ActiveDirectory").foreach{
         $psremoteobject = @{
             ObjectIdentifier = $_.SID
             ObjectType       = $_.ObjectClass
