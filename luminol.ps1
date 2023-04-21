@@ -31,25 +31,25 @@ Function Invoke-Luminol {
             name              = ""
             distinguishedname = "" 
             domainsid         = ""
-            #highvalue               = $false
+            highvalue               = $false
             samaccountname    = ""
-            #haslaps                 = $false #Populated from LDAP
-            #description             = "" #Populated from LDAP
-            #whencreated             = 0  #Populated from LDAP
-            #enabled                 = "" #Populated from LDAP
-            #unconstraineddelegation = "" #Populated from LDAP
-            #trustedtoauth           = "" #Populated from LDAP
-            #lastlogon               = "" #Populated from LDAP
-            #lastlogontimestamp      = "" #Populated from LDAP        
-            #pwdlastset              = "" #Populated from LDAP
-            #serviceprincipalnames   = New-Object System.Collections.ArrayList #Populated from LDAP
-            #operatingsystem         = ""  
-            #sidhistory              = New-Object System.Collections.ArrayList #Populated from LDAP
+            haslaps                 = $false #Populated from LDAP
+            description             = "" #Populated from LDAP
+            whencreated             = 0  #Populated from LDAP
+            enabled                 = "" #Populated from LDAP
+            unconstraineddelegation = "" #Populated from LDAP
+            trustedtoauth           = "" #Populated from LDAP
+            lastlogon               = "" #Populated from LDAP
+            lastlogontimestamp      = "" #Populated from LDAP        
+            pwdlastset              = "" #Populated from LDAP
+            serviceprincipalnames   = New-Object System.Collections.ArrayList #Populated from LDAP
+            operatingsystem         = ""  
+            sidhistory              = New-Object System.Collections.ArrayList #Populated from LDAP
         }
         PrimaryGroupSID    = "" #Populated from LDAP
-        #AllowedToDelegate  = New-Object System.Collections.ArrayList #Populated from LDAP
-        #AllowedToAct       = New-Object System.Collections.ArrayList #Populated from LDAP
-        #HasSIDHistory      = New-Object System.Collections.ArrayList #Populated from LDAP
+        AllowedToDelegate  = New-Object System.Collections.ArrayList #Populated from LDAP
+        AllowedToAct       = New-Object System.Collections.ArrayList #Populated from LDAP
+        HasSIDHistory      = New-Object System.Collections.ArrayList #Populated from LDAP
  
         Sessions           = @{
             Results       = New-Object System.Collections.ArrayList
@@ -94,15 +94,18 @@ Function Invoke-Luminol {
     }
 
     #Populate name and domain
-    $newobject.Properties.samaccountname = "$env:COMPUTERNAME$"
-    $newobject.Properties.name = "$env:COMPUTERNAME.$env:USERDNSDOMAIN"
-    $newobject.Properties.domain = "$env:USERDNSDOMAIN"
+    $domain = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+    $computername = [System.Environment]::MachineName
+
+    $newobject.Properties.samaccountname = "$computername" + "$"
+    $newobject.Properties.domain = $domain.Name
+    $newobject.Properties.name = "$computername.$domain"
 
     #Populate OperatingSystem
-    #$newobject.Properties.operatingsystem = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    $newobject.Properties.operatingsystem = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
 
     #Populate Domain SID
-    $domain = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+    
     $domainSid = $domain.GetDirectoryEntry().objectSid
     $domainDN = $domain.GetDirectoryEntry().distinguishedName
     $newobject.Properties.domainsid = (New-Object System.Security.Principal.SecurityIdentifier($domainSid[0], 0)).Value
@@ -231,7 +234,7 @@ Function Invoke-Luminol {
     $jsonobject.data.Add($newobject) | Out-Null
     $jsonobject.meta.count = $jsonobject.data.Count
 
-    $compressedjson = $jsonobject | ConvertTo-Json -Depth 5 -Compress
+    $jsonoutput = $jsonobject | ConvertTo-Json -Depth 5
 
-    return $compressedjson
+    return $jsonoutput
 }
